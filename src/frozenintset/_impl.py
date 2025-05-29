@@ -5,10 +5,10 @@ from collections.abc import (
     Iterator,
     Set,
 )
-from typing import NamedTuple, final, Final
+from typing import NamedTuple, final, Final, overload
 
 
-def _advance_and_pad_with_none[T](xs: Iterable[T], skip: int = 1) -> Iterator[T | None]:
+def _advance_and_pad_with_none(xs: Iterable[int], skip: int = 1) -> Iterator[int | None]:
     it = iter(xs)
     for _ in range(skip):
         next(it, None)
@@ -348,6 +348,14 @@ class FrozenIntSet(Set[int]):
             raise ValueError("empty FrozenIntSet has no maximum")
         return self._store[-1][1] - 1
 
+    @overload
+    def __getitem__(self, index: int) -> int:
+        pass
+
+    @overload
+    def __getitem__(self, index: slice) -> "FrozenIntSet":
+        pass
+
     def __getitem__(self, index: int | slice) -> int | "FrozenIntSet":
         if isinstance(index, int):
             if index < 0:
@@ -368,9 +376,9 @@ class FrozenIntSet(Set[int]):
                 raise ValueError("slice step cannot be zero")
             if step == 1:
                 # Fast path: contiguous slice
-                return type(self)(self[i] for i in range(start, stop))
+                return FrozenIntSet(self[i] for i in range(start, stop))
             else:
                 # Slower path for strided slice
-                return type(self)(self[i] for i in range(start, stop, step))
+                return FrozenIntSet(self[i] for i in range(start, stop, step))
 
         raise TypeError(f"Invalid index type: {type(index)}")
