@@ -335,3 +335,42 @@ class FrozenIntSet(Set[int]):
                 raise ValueError("Ranges must be disjoint and sorted.")
             prev_hi = hi
         return cls(_Store(tuple(sorted_ranges)))
+
+    @property
+    def min(self) -> int:
+        if not self._store:
+            raise ValueError("empty FrozenIntSet has no minimum")
+        return self._store[0][0]
+
+    @property
+    def max(self) -> int:
+        if not self._store:
+            raise ValueError("empty FrozenIntSet has no maximum")
+        return self._store[-1][1] - 1
+
+    def __getitem__(self, index: int | slice) -> int | "FrozenIntSet":
+        if isinstance(index, int):
+            if index < 0:
+                index += len(self)
+            if index < 0 or index >= len(self):
+                raise IndexError(f"Index {index} out of range")
+
+            for lo, hi in self._store:
+                span = hi - lo
+                if index < span:
+                    return lo + index
+                index -= span
+            raise RuntimeError("Corrupt IntSet state: index calculation failed")
+
+        if isinstance(index, slice):
+            start, stop, step = index.indices(len(self))
+            if step == 0:
+                raise ValueError("slice step cannot be zero")
+            if step == 1:
+                # Fast path: contiguous slice
+                return type(self)(self[i] for i in range(start, stop))
+            else:
+                # Slower path for strided slice
+                return type(self)(self[i] for i in range(start, stop, step))
+
+        raise TypeError(f"Invalid index type: {type(index)}")

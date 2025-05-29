@@ -1,2 +1,5 @@
-def hello() -> str:
-    return "Hello from frozenintset!"
+from ._impl import FrozenIntSet
+
+__all__ = (
+    'FrozenIntSet',
+)
