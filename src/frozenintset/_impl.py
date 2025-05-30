@@ -5,7 +5,7 @@ from collections.abc import (
     Iterator,
     Set,
 )
-from typing import NamedTuple, final, Final, overload
+from typing import NamedTuple, final, Final, overload, Self
 
 
 def _advance_and_pad_with_none(xs: Iterable[int], skip: int = 1) -> Iterator[int | None]:
@@ -36,14 +36,14 @@ class FrozenIntSet(Set[int]):
         """Return a copy of this FrozenIntSet."""
         return FrozenIntSet(self)
 
-    def union(self, *other: "FrozenIntSet") -> "FrozenIntSet":
+    def union(self, *other: Self) -> Self:
         """Take the union of this and all other FrozenIntSet instances."""
         if not other:
             return self
         return self | FrozenIntSet.union(*other)
 
-    @staticmethod
-    def union_all(rs: Iterable["FrozenIntSet"]) -> "FrozenIntSet":
+    @classmethod
+    def union_all(cls, rs: Iterable[Self]) -> Self:
         """Return a set with all elements from the given sets."""
         it = iter(rs)
         try:
@@ -54,14 +54,14 @@ class FrozenIntSet(Set[int]):
             r = r.union(e)
         return r
 
-    def intersection(self, *other) -> "FrozenIntSet":
+    def intersection(self, *other) -> Self:
         """Return a new set with elements common to the set and all others."""
         if not other:
             return self
         return self & FrozenIntSet.intersection(*other)
 
-    @staticmethod
-    def intersection_all(rs: Iterable["FrozenIntSet"]) -> "FrozenIntSet":
+    @classmethod
+    def intersection_all(cls, rs: Iterable[Self]) -> Self:
         """Return a set with the elements common to all given sets."""
         it = iter(rs)
         try:
@@ -72,11 +72,11 @@ class FrozenIntSet(Set[int]):
             r = r.intersection(e)
         return r
 
-    def difference(self, other) -> "FrozenIntSet":
+    def difference(self, other) -> Self:
         """Return a new set with elements in the set that are not in the others."""
         return self - other
 
-    def symmetric_difference(self, other) -> "FrozenIntSet":
+    def symmetric_difference(self, other) -> Self:
         """Return a new set with elements in either the set or other but not both."""
         return self ^ other
 
@@ -188,7 +188,7 @@ class FrozenIntSet(Set[int]):
             return self._store != other._store
         return NotImplemented
 
-    def __and__(self, other: Set[int]) -> "FrozenIntSet":
+    def __and__(self, other: Set[int]) -> Self:
         if not isinstance(other, FrozenIntSet):
             other = FrozenIntSet(other)
         if not self or not other:
@@ -212,7 +212,7 @@ class FrozenIntSet(Set[int]):
                 j += 1
         return FrozenIntSet(_Store(tuple(es)))
 
-    def __or__(self, other: Set[int]) -> "FrozenIntSet":  # type: ignore[override]
+    def __or__(self, other: Set[int]) -> Self:  # type: ignore[override]
         if not isinstance(other, FrozenIntSet):
             other = FrozenIntSet(other)
         if not self:
@@ -251,7 +251,7 @@ class FrozenIntSet(Set[int]):
 
         return FrozenIntSet(_Store(tuple(es)))
 
-    def __sub__(self, other: Set[int]) -> "FrozenIntSet":
+    def __sub__(self, other: Set[int]) -> Self:
         if not isinstance(other, FrozenIntSet):
             other = FrozenIntSet(other)
         if not self:
@@ -280,7 +280,7 @@ class FrozenIntSet(Set[int]):
             i += 1
         return FrozenIntSet(_Store(tuple(es)))
 
-    def __xor__(self, other: Set[int]) -> "FrozenIntSet":  # type: ignore[override]
+    def __xor__(self, other: Set[int]) -> Self:  # type: ignore[override]
         if not isinstance(other, FrozenIntSet):
             other = FrozenIntSet(other)
         return (self - other) | (other - self)
@@ -314,7 +314,7 @@ class FrozenIntSet(Set[int]):
         return all(e in self for e in other)
 
     @classmethod
-    def from_ranges_unsafe(cls, ranges: Iterable[tuple[int, int]]) -> "FrozenIntSet":
+    def from_ranges_unsafe(cls, ranges: Iterable[tuple[int, int]]) -> Self:
         """
         Construct a FrozenIntSet directly from a sequence of sorted, non-overlapping (lo, hi) tuples,
         where each lo < hi. Assumes input is well-formed and does not perform validation.
@@ -322,7 +322,7 @@ class FrozenIntSet(Set[int]):
         return cls(_Store(tuple(ranges)))
 
     @classmethod
-    def from_ranges(cls, ranges: Iterable[tuple[int, int]]) -> "FrozenIntSet":
+    def from_ranges(cls, ranges: Iterable[tuple[int, int]]) -> Self:
         """
         Construct a FrozenIntSet from explicit ranges.
         """
@@ -353,10 +353,10 @@ class FrozenIntSet(Set[int]):
         pass
 
     @overload
-    def __getitem__(self, index: slice) -> "FrozenIntSet":
+    def __getitem__(self, index: slice) -> Self:
         pass
 
-    def __getitem__(self, index: int | slice) -> int | "FrozenIntSet":
+    def __getitem__(self, index: int | slice) -> int | Self:
         if isinstance(index, int):
             if index < 0:
                 index += len(self)
